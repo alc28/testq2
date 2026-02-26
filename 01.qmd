@@ -17,20 +17,66 @@ Libraries
 #| warning: false
 ```
 
-
 ```{r}
+#| warning: false
+
 library(tidyverse)
 library(openxlsx2)
 library(readxl)
 library(janitor)
+library(DBI)
+library(odbc)
 
 ```
 
-You can add options to executable code like this 
+# Connect to Metadb
 
-```{r}
-#| echo: false
-2 * 2
+```{r setup-connection, echo=FALSE}
+
+nameofdbconnection <- DBI::dbConnect(odbc::odbc(), 
+                      driver   = "PostgreSQL Unicode(x64)",
+                      database = "nameofdb",
+                      UID      = "username",
+                      PWD      = Sys.getenv("savedpwdinenv"),
+                      server   = "",
+                      port     = 5434,
+                      sslmode  = "require",
+                      bigint   = "integer")
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+
+
+# SQL chunk
+```{sql connection=nameofdbconnection, output.var="df_sql_raw", echo=FALSE}
+
+
+```
+
+
+# main section for processing
+
+
+# Write to Excel
+
+```{r, warning=FALSE, message=FALSE}
+
+wb <- wb_workbook() %>%
+  wb_add_worksheet(sheet = "comparison of totals") %>%
+  wb_add_data(x = all_totals, na.strings = "") %>%
+  wb_freeze_pane("comparison of totals", first_active_row = 2)
+
+# this bit is to write a plot to the spreadsheet
+# needs to be created somewhere above
+# this is just a place holder
+print(figure1)
+wb$add_worksheet("name worksheet")$
+  add_plot(width = 10, height = 7, file_type = "png", units = "in")
+
+wb %>%
+  wb_save(file = paste0("output/file_", Sys.Date(), ".xlsx"  ))
+
+```
+
+
+
+
